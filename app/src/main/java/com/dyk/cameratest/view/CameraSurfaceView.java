@@ -34,7 +34,6 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
     private int mScreenWidth;
     private int mScreenHeight;
 
-
     public CameraSurfaceView(Context context) {
         this(context, null);
     }
@@ -75,7 +74,6 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
                 e.printStackTrace();
             }
         }
-        
     }
 
     @Override
@@ -84,7 +82,6 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
         //设置参数并开始预览
         setCameraParams(mCamera, mScreenWidth, mScreenHeight);
         mCamera.startPreview();
-        
     }
 
     @Override
