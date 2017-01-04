@@ -16,6 +16,8 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.dyk.cameratest.MainActivity;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,6 +37,8 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
 
     private int mScreenWidth;
     private int mScreenHeight;
+
+    public static String filepath;
 
     public CameraSurfaceView(Context context) {
         this(context, null);
@@ -132,13 +136,13 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
                 bm = BitmapFactory.decodeByteArray(data, 0, data.length);
                 if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                     Log.i(TAG, "Environment.getExternalStorageDirectory()="+Environment.getExternalStorageDirectory());
-                    String filePath = "/sdcard/dyk"+System.currentTimeMillis()+".jpg";//照片保存路径
+                    final String filePath = "/sdcard/dyk"+System.currentTimeMillis()+".jpg";//照片保存路径
+                    filepath = filePath;
                     File file = new File(filePath);
                     if (!file.exists()){
                         file.createNewFile();
                     }
                     bos = new BufferedOutputStream(new FileOutputStream(file));
-
 
                     Bitmap  bmRotate;
                     Configuration config = getResources().getConfiguration();
@@ -150,7 +154,6 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
                         bmRotate = Bitmap.createBitmap(bm, 0, 0,bm.getWidth(), bm.getHeight(),matrix, true);
                         bm = bmRotate;
                     }
-
 
                     bm.compress(Bitmap.CompressFormat.JPEG, 100, bos);//将图片压缩到流中
                 }
@@ -184,11 +187,12 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
         mCamera.autoFocus(this);
     }
 
-    public void takePicture(){
+    public String takePicture(){
         //设置参数,并拍照
         setCameraParams(mCamera, mScreenWidth, mScreenHeight);
         // 当调用camera.takePiture方法后，camera关闭了预览，这时需要调用startPreview()来重新开启预览
         mCamera.takePicture(null, null, jpeg);
+        return filepath;
     }
 
     private void setCameraParams(Camera camera, int width, int height) {
@@ -223,7 +227,7 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
         Camera.Size preSize = getProperSize(previewSizeList, ((float) height) / width);
         if (null != preSize) {
             Log.i(TAG, "preSize.width=" + preSize.width + "  preSize.height=" + preSize.height);
-            parameters.setPreviewSize(1280, 720);
+            parameters.setPreviewSize(1280, 960);
 //            parameters.setPreviewSize(preSize.width, preSize.height);
         }
 
