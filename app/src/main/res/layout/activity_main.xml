@@ -39,5 +39,16 @@
             android:background="#88427ac7"
             android:text="拍照"
             android:textColor="#aaa" />
+        <Button
+            android:id="@+id/flash"
+            android:layout_width="80dp"
+            android:layout_height="50dp"
+            android:background="#88427ac7"
+            android:text="闪光灯"
+            android:textColor="#aaa"
+            android:layout_alignTop="@+id/takePic"
+            android:layout_toLeftOf="@+id/takePic"
+            android:layout_toStartOf="@+id/takePic" />
+
     </RelativeLayout>
 </FrameLayout>

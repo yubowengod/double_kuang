@@ -1,8 +1,10 @@
 package com.dyk.cameratest.view;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.os.Environment;
 import android.util.AttributeSet;
@@ -92,7 +94,7 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
         mCamera = null;
         holder = null;
     }
-    
+
     @Override
     public void onAutoFocus(boolean success, Camera Camera) {
         if (success) {
@@ -114,19 +116,19 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
         @Override
         public void onPictureTaken(byte[] data, Camera Camera) {
             Log.i(TAG, "raw");
-
         }
     };
 
+
+
     //创建jpeg图片回调数据对象
     private Camera.PictureCallback jpeg = new Camera.PictureCallback() {
-
         @Override
         public void onPictureTaken(byte[] data, Camera Camera) {
             BufferedOutputStream bos = null;
             Bitmap bm = null;
             try {
-            	// 获得图片
+                // 获得图片
                 bm = BitmapFactory.decodeByteArray(data, 0, data.length);
                 if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                     Log.i(TAG, "Environment.getExternalStorageDirectory()="+Environment.getExternalStorageDirectory());
@@ -136,25 +138,41 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
                         file.createNewFile();
                     }
                     bos = new BufferedOutputStream(new FileOutputStream(file));
-                    bm.compress(Bitmap.CompressFormat.JPEG, 100, bos);//将图片压缩到流中
 
-                }else{
+
+                    Bitmap  bmRotate;
+                    Configuration config = getResources().getConfiguration();
+                    if (config.orientation==1)
+                    { // 坚拍
+                        Matrix matrix = new Matrix();
+                        matrix.reset();
+                        matrix.postRotate(90);
+                        bmRotate = Bitmap.createBitmap(bm, 0, 0,bm.getWidth(), bm.getHeight(),matrix, true);
+                        bm = bmRotate;
+                    }
+
+
+                    bm.compress(Bitmap.CompressFormat.JPEG, 100, bos);//将图片压缩到流中
+                }
+                else{
                     Toast.makeText(mContext,"没有检测到内存卡", Toast.LENGTH_SHORT).show();
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 e.printStackTrace();
-            } finally {
+            }
+            finally {
                 try {
                     bos.flush();//输出
                     bos.close();//关闭
                     bm.recycle();// 回收bitmap空间
                     mCamera.stopPreview();// 关闭预览
                     mCamera.startPreview();// 开启预览
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-
         }
     };
 
@@ -188,10 +206,12 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
             picSize = parameters.getPictureSize();
         }
         Log.i(TAG, "picSize.width=" + picSize.width + "  picSize.height=" + picSize.height);
-         // 根据选出的PictureSize重新设置SurfaceView大小
+        // 根据选出的PictureSize重新设置SurfaceView大小
         float w = picSize.width;
         float h = picSize.height;
-        parameters.setPictureSize(picSize.width,picSize.height);
+        parameters.setPictureSize(3264,2448);
+//        parameters.setPictureSize(picSize.width,picSize.height);
+
         this.setLayoutParams(new FrameLayout.LayoutParams((int) (height*(h/w)), height));
 
         // 获取摄像头支持的PreviewSize列表
@@ -203,7 +223,8 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
         Camera.Size preSize = getProperSize(previewSizeList, ((float) height) / width);
         if (null != preSize) {
             Log.i(TAG, "preSize.width=" + preSize.width + "  preSize.height=" + preSize.height);
-            parameters.setPreviewSize(preSize.width, preSize.height);
+            parameters.setPreviewSize(1280, 720);
+//            parameters.setPreviewSize(preSize.width, preSize.height);
         }
 
         parameters.setJpegQuality(100); // 设置照片质量
@@ -237,15 +258,12 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
         if (null == result) {
             for (Camera.Size size : pictureSizeList) {
                 float curRatio = ((float) size.width) / size.height;
-                if (curRatio == 4f / 3) {// 默认w:h = 4:3
+                if (curRatio == 4f /3) {// 默认w:h = 4:3
                     result = size;
                     break;
                 }
             }
         }
-
         return result;
     }
-
-
 }
